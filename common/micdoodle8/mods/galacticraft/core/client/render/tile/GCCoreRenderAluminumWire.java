@@ -1,5 +1,6 @@
 package micdoodle8.mods.galacticraft.core.client.render.tile;
 
+import micdoodle8.mods.galacticraft.api.transmission.tile.IConductor;
 import micdoodle8.mods.galacticraft.core.GalacticraftCore;
 import micdoodle8.mods.galacticraft.core.tile.GCCoreTileEntityAluminumWire;
 import micdoodle8.mods.galacticraft.core.util.WorldUtil;
@@ -201,6 +202,63 @@ public class GCCoreRenderAluminumWire extends TileEntitySpecialRenderer
 			}
 		}
 		
+		GL11.glPushMatrix();
+		
+		if (adjecentConnections[0] != null && !(adjecentConnections[0] instanceof IConductor))
+		{
+			model.renderPart("connDown");
+		}
+
+		if (adjecentConnections[1] != null && !(adjecentConnections[1] instanceof IConductor))
+		{
+			model.renderPart("connUp");
+		}
+		
+		GL11.glPopMatrix();
+		
+		GL11.glPushMatrix();
+		
+		GL11.glScalef(2, 2, 1F);
+
+		if (adjecentConnections[2] != null && !(adjecentConnections[2] instanceof IConductor))
+		{
+			GL11.glTranslatef(0, 0, -1F);
+			GL11.glScalef(1, 1, 0.5F);
+			GL11.glTranslatef(0, 0, 1F);
+			model.renderPart("connWest");
+		}
+
+		if (adjecentConnections[3] != null && !(adjecentConnections[3] instanceof IConductor))
+		{
+			GL11.glTranslatef(0, 0, 1F);
+			GL11.glScalef(1, 1, 0.5F);
+			GL11.glTranslatef(0, 0, -1F);
+			model.renderPart("connEast");
+		}
+		
+		GL11.glPopMatrix();
+		
+		GL11.glPushMatrix();
+		
+		GL11.glScalef(1, 2, 2F);
+		
+		if (adjecentConnections[4] != null && !(adjecentConnections[4] instanceof IConductor))
+		{
+			GL11.glTranslatef(-1, 0, 0F);
+			GL11.glScalef(0.5F, 1, 1F);
+			GL11.glTranslatef(1, 0, 0F);
+			model.renderPart("connSouth");
+		}
+
+		if (adjecentConnections[5] != null && !(adjecentConnections[5] instanceof IConductor))
+		{
+			GL11.glTranslatef(1, 0, 0F);
+			GL11.glScalef(0.5F, 1, 1F);
+			GL11.glTranslatef(-1, 0, 0F);
+			model.renderPart("connNorth");
+		}
+		
+		GL11.glPopMatrix();
 		
 		GL11.glPopMatrix();
 	}
