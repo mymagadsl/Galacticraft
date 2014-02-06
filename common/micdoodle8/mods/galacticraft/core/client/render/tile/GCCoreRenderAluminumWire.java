@@ -27,15 +27,15 @@ import cpw.mods.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class GCCoreRenderAluminumWire extends TileEntitySpecialRenderer
 {
-	private static final ResourceLocation aluminumWireTexture = new ResourceLocation(GalacticraftCore.ASSET_DOMAIN, "textures/model/aluminumWire.png");
+	private static final ResourceLocation aluminumWireTexture = new ResourceLocation(GalacticraftCore.ASSET_DOMAIN, "textures/model/cable.png");
 
 	public final IModelCustom model;
 	public final IModelCustom model2;
 
 	public GCCoreRenderAluminumWire()
 	{
-		this.model = AdvancedModelLoader.loadModel("/assets/galacticraftcore/models/aluminumWire.obj");
-		this.model2 = AdvancedModelLoader.loadModel("/assets/galacticraftcore/models/aluminumWireHeavy.obj");
+		this.model = AdvancedModelLoader.loadModel("/assets/galacticraftcore/models/cable.obj");
+		this.model2 = AdvancedModelLoader.loadModel("/assets/galacticraftcore/models/cable.obj");
 	}
 
 	public void renderModelAt(GCCoreTileEntityAluminumWire tileEntity, double d, double d1, double d2, float f)
@@ -44,8 +44,9 @@ public class GCCoreRenderAluminumWire extends TileEntitySpecialRenderer
 		FMLClientHandler.instance().getClient().renderEngine.bindTexture(GCCoreRenderAluminumWire.aluminumWireTexture);
 		GL11.glPushMatrix();
 		GL11.glTranslatef((float) d + 0.5F, (float) d1 + 0.5F, (float) d2 + 0.5F);
-		GL11.glScalef(1.0F, -1F, -1F);
-
+//		GL11.glScalef(1.0F, -1F, -1F);
+		GL11.glScalef(0.5F, 0.5F, 0.5F);
+		
 		TileEntity[] adjecentConnections = WorldUtil.getAdjacentPowerConnections(tileEntity);
 
 		// for (byte i = 0; i < 6; i++)
@@ -120,35 +121,87 @@ public class GCCoreRenderAluminumWire extends TileEntitySpecialRenderer
 
 		if (adjecentConnections[0] != null)
 		{
-			model.renderPart("Top");
+			model.renderPart("ringDown");
 		}
 
 		if (adjecentConnections[1] != null)
 		{
-			model.renderPart("Bottom");
+			model.renderPart("ringUp");
 		}
 
+		GL11.glPushMatrix();
+		GL11.glScalef(1.0F, 1.0F, 1.0F + (float)Math.sin(tileEntity.ticks / 5.0F) / 5.0F);
+		GL11.glRotatef(tileEntity.ticks * 22.5F, 0, 0, 1);
+		
 		if (adjecentConnections[2] != null)
 		{
-			model.renderPart("Front");
+			model.renderPart("ringWest");
 		}
 
 		if (adjecentConnections[3] != null)
 		{
-			model.renderPart("Back");
+			model.renderPart("ringEast");
 		}
+		
+		GL11.glPopMatrix();
 
+		GL11.glPushMatrix();
+		GL11.glScalef(1.0F + (float)Math.sin(tileEntity.ticks / 5.0F) / 5.0F, 1.0F, 1.0F);
+		GL11.glRotatef(tileEntity.ticks * 22.5F, 1, 0, 0);
+		
 		if (adjecentConnections[4] != null)
 		{
-			model.renderPart("Right");
+			model.renderPart("ringSouth");
 		}
 
 		if (adjecentConnections[5] != null)
 		{
-			model.renderPart("Left");
+			model.renderPart("ringNorth");
 		}
+		
+		GL11.glPopMatrix();
 
-		model.renderPart("Middle");
+		GL11.glPushMatrix();
+		GL11.glRotatef((tileEntity.ticks * 5) % 360, 0, 1, 0);
+		GL11.glTranslatef(0, (float)Math.cos(tileEntity.ticks / 5.0F) / 15.0F, 0);
+		GL11.glScalef(0.5F, 0.5F, 0.5F);
+		model.renderPart("center");
+		GL11.glPopMatrix();
+		
+		if (Math.abs((float)Math.cos(tileEntity.ticks / 5.0F) / 5.0F) < 0.1F)
+		{
+			if (adjecentConnections[0] != null)
+			{
+				model.renderPart("mainDown");
+			}
+
+			if (adjecentConnections[1] != null)
+			{
+				model.renderPart("mainUp");
+			}
+
+			if (adjecentConnections[2] != null)
+			{
+				model.renderPart("mainWest");
+			}
+
+			if (adjecentConnections[3] != null)
+			{
+				model.renderPart("mainEast");
+			}
+			
+			if (adjecentConnections[4] != null)
+			{
+				model.renderPart("mainSouth");
+			}
+
+			if (adjecentConnections[5] != null)
+			{
+				model.renderPart("mainNorth");
+			}
+		}
+		
+		
 		GL11.glPopMatrix();
 	}
 

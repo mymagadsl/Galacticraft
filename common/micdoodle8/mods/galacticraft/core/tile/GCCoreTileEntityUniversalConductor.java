@@ -84,6 +84,8 @@ public abstract class GCCoreTileEntityUniversalConductor extends GCCoreTileEntit
 	@Override
 	public void updateEntity()
 	{
+		super.updateEntity();
+		
 		if (!this.isAddedToEnergyNet)
 		{
 			if (!this.worldObj.isRemote)

@@ -30,7 +30,7 @@ import cpw.mods.fml.relauncher.Side;
  */
 public abstract class GCCoreTileEntityAdvanced extends TileEntity implements IPacketReceiver
 {
-	protected long ticks = 0;
+	public long ticks = 0;
 	private LinkedHashSet<Field> fieldCacheClient;
 	private LinkedHashSet<Field> fieldCacheServer;
 
