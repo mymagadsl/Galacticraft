@@ -8,6 +8,7 @@ import java.util.Collections;
 
 import micdoodle8.mods.galacticraft.api.recipe.ISchematicPage;
 import micdoodle8.mods.galacticraft.api.recipe.SchematicRegistry;
+import micdoodle8.mods.galacticraft.api.transmission.tile.INetworkConnection;
 import micdoodle8.mods.galacticraft.core.GCCoreConfigManager;
 import micdoodle8.mods.galacticraft.core.GCLog;
 import micdoodle8.mods.galacticraft.core.GalacticraftCore;
@@ -98,7 +99,8 @@ public class GCCorePacketHandlerClient implements IPacketHandler
 		OPEN_PARACHEST_GUI(28, Integer.class, Integer.class, Integer.class),
 		UPDATE_LANDER(29),
 		UPDATE_PARACHEST(30),
-		UPDATE_WIRE_BOUNDS(31, Integer.class, Integer.class, Integer.class);
+		UPDATE_WIRE_BOUNDS(31, Integer.class, Integer.class, Integer.class),
+		REFRESH_NETWORK(32, Integer.class, Integer.class, Integer.class);
 
 		private int index;
 		private Class<?>[] decodeAs;
@@ -518,6 +520,15 @@ public class GCCorePacketHandlerClient implements IPacketHandler
 				((GCCoreTileEntityConductor) tile).adjacentConnections = null;
 				Block.blocksList[player.worldObj.getBlockId(tile.xCoord, tile.yCoord, tile.zCoord)].setBlockBoundsBasedOnState(player.worldObj, tile.xCoord, tile.yCoord, tile.zCoord);
 			}
+			break;
+		case REFRESH_NETWORK:
+			TileEntity tile2 = player.worldObj.getBlockTileEntity((Integer) packetReadout[0], (Integer) packetReadout[1], (Integer) packetReadout[2]);
+			
+			if (tile2 instanceof INetworkConnection)
+			{
+				((INetworkConnection) tile2).refresh();
+			}
+			
 			break;
 		}
 	}

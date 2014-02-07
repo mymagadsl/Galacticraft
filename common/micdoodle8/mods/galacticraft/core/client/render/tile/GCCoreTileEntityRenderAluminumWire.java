@@ -3,6 +3,7 @@ package micdoodle8.mods.galacticraft.core.client.render.tile;
 import micdoodle8.mods.galacticraft.api.transmission.tile.IConductor;
 import micdoodle8.mods.galacticraft.core.GalacticraftCore;
 import micdoodle8.mods.galacticraft.core.tile.GCCoreTileEntityAluminumWire;
+import micdoodle8.mods.galacticraft.core.tile.GCCoreTileEntityConductor;
 import micdoodle8.mods.galacticraft.core.util.WorldUtil;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.tileentity.TileEntity;
@@ -26,86 +27,30 @@ import cpw.mods.fml.relauncher.SideOnly;
  * 
  */
 @SideOnly(Side.CLIENT)
-public class GCCoreRenderAluminumWire extends TileEntitySpecialRenderer
+public class GCCoreTileEntityRenderAluminumWire extends TileEntitySpecialRenderer
 {
 	private static final ResourceLocation aluminumWireTexture = new ResourceLocation(GalacticraftCore.ASSET_DOMAIN, "textures/model/cable.png");
 
 	public final IModelCustom model;
 	public final IModelCustom model2;
 
-	public GCCoreRenderAluminumWire()
+	public GCCoreTileEntityRenderAluminumWire()
 	{
 		this.model = AdvancedModelLoader.loadModel("/assets/galacticraftcore/models/cable.obj");
 		this.model2 = AdvancedModelLoader.loadModel("/assets/galacticraftcore/models/cable.obj");
 	}
 
+	@SuppressWarnings("unchecked")
 	public void renderModelAt(GCCoreTileEntityAluminumWire tileEntity, double d, double d1, double d2, float f)
 	{
-		// Texture file
-		FMLClientHandler.instance().getClient().renderEngine.bindTexture(GCCoreRenderAluminumWire.aluminumWireTexture);
+		FMLClientHandler.instance().getClient().renderEngine.bindTexture(GCCoreTileEntityRenderAluminumWire.aluminumWireTexture);
 		GL11.glPushMatrix();
 		GL11.glTranslatef((float) d + 0.5F, (float) d1 + 0.5F, (float) d2 + 0.5F);
-//		GL11.glScalef(1.0F, -1F, -1F);
 		GL11.glScalef(0.5F, 0.5F, 0.5F);
 		
 		TileEntity[] adjecentConnections = WorldUtil.getAdjacentPowerConnections(tileEntity);
 
-		// for (byte i = 0; i < 6; i++)
-		// {
-		// ForgeDirection side = ForgeDirection.getOrientation(i);
-		// Vector3 tileVec = new Vector3(tileEntity);
-		// TileEntity adjacentTile =
-		// tileVec.modifyPositionFromSide(side).getTileEntity(tileEntity.worldObj);
-		//
-		// if (adjacentTile instanceof IConnector)
-		// {
-		// if (((IConnector) adjacentTile).canConnect(side.getOpposite()))
-		// {
-		// adjecentConnections.add(adjacentTile);
-		// }
-		// else
-		// {
-		// adjecentConnections.add(null);
-		// }
-		// }
-		// else if (PowerConfigHandler.isIndustrialCraft2Loaded() &&
-		// adjacentTile instanceof IEnergyTile)
-		// {
-		// if (adjacentTile instanceof IEnergyAcceptor)
-		// {
-		// if (((IEnergyAcceptor) adjacentTile).acceptsEnergyFrom(tileEntity,
-		// side.getOpposite()))
-		// {
-		// adjecentConnections.add(adjacentTile);
-		// }
-		// else
-		// {
-		// if (adjacentTile instanceof IEnergySource && ((IEnergyEmitter)
-		// adjacentTile).emitsEnergyTo(tileEntity, side.getOpposite()))
-		// {
-		// adjecentConnections.add(adjacentTile);
-		// }
-		// else
-		// {
-		// adjecentConnections.add(null);
-		// }
-		// }
-		// }
-		// else
-		// {
-		// adjecentConnections.add(adjacentTile);
-		// }
-		// }
-		// else if (PowerConfigHandler.isBuildcraftLoaded() && adjacentTile
-		// instanceof IPowerReceptor)
-		// {
-		// adjecentConnections.add(adjacentTile);
-		// }
-		// else
-		// {
-		// adjecentConnections.add(null);
-		// }
-		// }
+		long ticks = ((GCCoreTileEntityConductor) tileEntity.getNetwork().getTransmitters().toArray(new GCCoreTileEntityConductor[tileEntity.getNetwork().getTransmitters().size()])[0]).ticks;
 
 		int metadata = tileEntity.worldObj.getBlockMetadata(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
 
@@ -131,8 +76,8 @@ public class GCCoreRenderAluminumWire extends TileEntitySpecialRenderer
 		}
 
 		GL11.glPushMatrix();
-		GL11.glScalef(1.0F, 1.0F, 1.0F + (float)Math.sin(tileEntity.ticks / 5.0F) / 5.0F);
-		GL11.glRotatef(tileEntity.ticks * 22.5F, 0, 0, 1);
+		GL11.glScalef(1.0F, 1.0F, 1.0F + (float)Math.sin(ticks / 5.0F) / 5.0F);
+		GL11.glRotatef(ticks * 22.5F, 0, 0, 1);
 		
 		if (adjecentConnections[2] != null)
 		{
@@ -147,8 +92,8 @@ public class GCCoreRenderAluminumWire extends TileEntitySpecialRenderer
 		GL11.glPopMatrix();
 
 		GL11.glPushMatrix();
-		GL11.glScalef(1.0F + (float)Math.sin(tileEntity.ticks / 5.0F) / 5.0F, 1.0F, 1.0F);
-		GL11.glRotatef(tileEntity.ticks * 22.5F, 1, 0, 0);
+		GL11.glScalef(1.0F + (float)Math.sin(ticks / 5.0F) / 5.0F, 1.0F, 1.0F);
+		GL11.glRotatef(ticks * 22.5F, 1, 0, 0);
 		
 		if (adjecentConnections[4] != null)
 		{
@@ -163,13 +108,13 @@ public class GCCoreRenderAluminumWire extends TileEntitySpecialRenderer
 		GL11.glPopMatrix();
 
 		GL11.glPushMatrix();
-		GL11.glRotatef((tileEntity.ticks * 5) % 360, 0, 1, 0);
-		GL11.glTranslatef(0, (float)Math.cos(tileEntity.ticks / 5.0F) / 15.0F, 0);
+		GL11.glRotatef((ticks * 5) % 360, 0, 1, 0);
+		GL11.glTranslatef(0, (float)Math.cos(ticks / 5.0F) / 15.0F, 0);
 		GL11.glScalef(0.5F, 0.5F, 0.5F);
 		model.renderPart("center");
 		GL11.glPopMatrix();
 		
-		if (Math.abs((float)Math.cos(tileEntity.ticks / 5.0F) / 5.0F) < 0.1F)
+		if (Math.abs((float)Math.cos(ticks / 5.0F) / 5.0F) < 0.1F)
 		{
 			if (adjecentConnections[0] != null)
 			{

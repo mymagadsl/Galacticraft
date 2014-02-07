@@ -260,6 +260,7 @@ public class UniversalNetwork extends ElectricityNetwork
 	public void refresh()
 	{
 		this.electricalTiles.clear();
+		boolean markUpdate = false;
 		
 		try
 		{
@@ -271,26 +272,26 @@ public class UniversalNetwork extends ElectricityNetwork
 
 				if (conductor == null)
 				{
+					markUpdate = true;
 					it.remove();
 					continue;
 				}
 				
-				conductor.onNetworkChanged();
-
 				if (((TileEntity) conductor).isInvalid() || ((TileEntity) conductor).getWorldObj() == null)
 				{
+					markUpdate = true;
 					it.remove();
 					continue;
 				}
-				else if (((TileEntity) conductor).getWorldObj().getBlockTileEntity(((TileEntity) conductor).xCoord, ((TileEntity) conductor).yCoord, ((TileEntity) conductor).zCoord) != conductor)
+
+				if (((TileEntity) conductor).getWorldObj().getBlockTileEntity(((TileEntity) conductor).xCoord, ((TileEntity) conductor).yCoord, ((TileEntity) conductor).zCoord) != conductor)
 				{
+					markUpdate = true;
 					it.remove();
 					continue;
 				}
-				else
-				{
-					conductor.setNetwork(this);
-				}
+
+				conductor.setNetwork(this);
 
 				for (int i = 0; i < conductor.getAdjacentConnections().length; i++)
 				{
@@ -323,6 +324,7 @@ public class UniversalNetwork extends ElectricityNetwork
 
 							if (canConnect)
 							{
+								markUpdate = true;
 								this.electricalTiles.put(acceptor, direction);
 							}
 						}
@@ -334,6 +336,14 @@ public class UniversalNetwork extends ElectricityNetwork
 		{
 			FMLLog.severe("Universal Electricity: Failed to refresh conductor.");
 			e.printStackTrace();
+		}
+		
+		if (markUpdate)
+		{
+			for (IConductor conductor : this.getTransmitters())
+			{
+				conductor.onNetworkChanged();
+			}
 		}
 	}
 

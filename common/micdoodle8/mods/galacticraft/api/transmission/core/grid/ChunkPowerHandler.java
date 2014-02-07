@@ -2,13 +2,16 @@ package micdoodle8.mods.galacticraft.api.transmission.core.grid;
 
 import java.util.ArrayList;
 
-import com.google.common.collect.Lists;
-
 import micdoodle8.mods.galacticraft.api.transmission.tile.INetworkConnection;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.world.ChunkEvent;
+import net.minecraftforge.event.world.WorldEvent;
+
+import com.google.common.collect.Lists;
+
+import cpw.mods.fml.common.FMLLog;
 
 public class ChunkPowerHandler
 {
@@ -21,6 +24,11 @@ public class ChunkPowerHandler
 			ChunkPowerHandler.initiated = true;
 			MinecraftForge.EVENT_BUS.register(new ChunkPowerHandler());
 		}
+	}
+
+	@ForgeSubscribe
+	public void onWorldLoad(ChunkEvent.Load event)
+	{
 	}
 
 	@ForgeSubscribe
@@ -41,6 +49,7 @@ public class ChunkPowerHandler
 
 						if (tile instanceof INetworkConnection)
 						{
+							FMLLog.info("Chunk loaded " + event.world.isRemote);
 							((INetworkConnection) tile).refresh();
 						}
 					}

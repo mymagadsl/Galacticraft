@@ -18,6 +18,7 @@ import buildcraft.api.power.IPowerReceptor;
 import buildcraft.api.power.PowerHandler;
 import buildcraft.api.power.PowerHandler.PowerReceiver;
 import buildcraft.api.power.PowerHandler.Type;
+import cpw.mods.fml.common.FMLLog;
 
 /**
  * GCCoreTileEntityUniversalConductor.java
@@ -85,6 +86,8 @@ public abstract class GCCoreTileEntityUniversalConductor extends GCCoreTileEntit
 	public void updateEntity()
 	{
 		super.updateEntity();
+		
+//		FMLLog.info("" + this.worldObj.isRemote + " " + this.network);
 		
 		if (!this.isAddedToEnergyNet)
 		{

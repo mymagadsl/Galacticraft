@@ -24,7 +24,7 @@ import net.minecraftforge.common.ForgeDirection;
  * @license Lesser GNU Public License v3 (http://www.gnu.org/licenses/lgpl.html)
  * 
  */
-public class GCCoreTileEntityEnergyStorageModule extends GCCoreTileEntityUniversalElectrical implements IPacketReceiver, ISidedInventory
+public class GCCoreTileEntityEnergyStorageModule extends GCCoreTileEntityUniversalElectrical implements ISidedInventory
 {
 	private ItemStack[] containingItems = new ItemStack[2];
 

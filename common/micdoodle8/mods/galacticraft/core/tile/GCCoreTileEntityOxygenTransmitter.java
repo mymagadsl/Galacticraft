@@ -12,10 +12,15 @@ import micdoodle8.mods.galacticraft.api.transmission.tile.INetworkProvider;
 import micdoodle8.mods.galacticraft.api.transmission.tile.ITransmitter;
 import micdoodle8.mods.galacticraft.api.vector.Vector3;
 import micdoodle8.mods.galacticraft.core.GCCoreAnnotations.RuntimeInterface;
+import micdoodle8.mods.galacticraft.core.GalacticraftCore;
+import micdoodle8.mods.galacticraft.core.network.GCCorePacketHandlerClient.EnumPacketClient;
+import micdoodle8.mods.galacticraft.core.util.PacketUtil;
 import micdoodle8.mods.galacticraft.core.util.WorldUtil;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraftforge.common.ForgeDirection;
+import cpw.mods.fml.common.FMLLog;
+import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -44,6 +49,12 @@ public abstract class GCCoreTileEntityOxygenTransmitter extends GCCoreTileEntity
 
 	@Override
 	public IGridNetwork getNetwork()
+	{
+		return this.getNetwork(true);
+	}
+	
+	@Override
+	public IGridNetwork getNetwork(boolean createIfNull)
 	{
 		if (this.network == null)
 		{
@@ -77,24 +88,26 @@ public abstract class GCCoreTileEntityOxygenTransmitter extends GCCoreTileEntity
 	{
 		if (!this.worldObj.isRemote)
 		{
-			this.adjacentConnections = null;
+			PacketDispatcher.sendPacketToAllAround(this.xCoord, this.yCoord, this.zCoord, 50.0D, this.worldObj.provider.dimensionId, PacketUtil.createPacket(GalacticraftCore.CHANNEL, EnumPacketClient.REFRESH_NETWORK, new Object[] { this.xCoord, this.yCoord, this.zCoord }));
+		}
+		
+		this.adjacentConnections = null;
 
-			for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS)
+		for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS)
+		{
+			TileEntity tileEntity = new Vector3(this).modifyPositionFromSide(side).getTileEntity(this.worldObj);
+
+			if (tileEntity != null)
 			{
-				TileEntity tileEntity = new Vector3(this).modifyPositionFromSide(side).getTileEntity(this.worldObj);
-
-				if (tileEntity != null)
+				if (tileEntity.getClass() == this.getClass() && tileEntity instanceof INetworkProvider && tileEntity instanceof IConnector && ((IConnector) tileEntity).canConnect(side.getOpposite(), NetworkType.OXYGEN))
 				{
-					if (tileEntity.getClass() == this.getClass() && tileEntity instanceof INetworkProvider && tileEntity instanceof IConnector && ((IConnector) tileEntity).canConnect(side.getOpposite(), NetworkType.OXYGEN))
-					{
-						IGridNetwork newNetwork = (IGridNetwork) this.getNetwork().merge(((INetworkProvider) tileEntity).getNetwork());
-						this.setNetwork(newNetwork);
-					}
+					IGridNetwork newNetwork = (IGridNetwork) this.getNetwork().merge(((INetworkProvider) tileEntity).getNetwork());
+					this.setNetwork(newNetwork);
 				}
 			}
-
-			this.getNetwork().refresh();
 		}
+
+		this.getNetwork().refresh();
 	}
 
 	@Override

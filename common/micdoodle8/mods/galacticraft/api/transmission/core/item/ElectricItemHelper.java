@@ -1,7 +1,9 @@
 package micdoodle8.mods.galacticraft.api.transmission.core.item;
 
+import cpw.mods.fml.common.FMLLog;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.ForgeDirection;
 
 /**
  * Some helper functions for electric items.

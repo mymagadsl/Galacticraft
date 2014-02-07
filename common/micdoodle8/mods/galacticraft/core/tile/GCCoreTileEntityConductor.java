@@ -1,15 +1,23 @@
 package micdoodle8.mods.galacticraft.core.tile;
 
+import java.util.HashSet;
+
 import micdoodle8.mods.galacticraft.api.transmission.NetworkType;
 import micdoodle8.mods.galacticraft.api.transmission.compatibility.UniversalNetwork;
 import micdoodle8.mods.galacticraft.api.transmission.core.grid.IGridNetwork;
 import micdoodle8.mods.galacticraft.api.transmission.tile.IConductor;
 import micdoodle8.mods.galacticraft.api.transmission.tile.IConnector;
 import micdoodle8.mods.galacticraft.api.transmission.tile.INetworkProvider;
+import micdoodle8.mods.galacticraft.api.transmission.tile.ITransmitter;
 import micdoodle8.mods.galacticraft.api.vector.Vector3;
+import micdoodle8.mods.galacticraft.core.GalacticraftCore;
+import micdoodle8.mods.galacticraft.core.network.GCCorePacketHandlerClient.EnumPacketClient;
+import micdoodle8.mods.galacticraft.core.util.PacketUtil;
+import micdoodle8.mods.galacticraft.core.util.WorldUtil;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraftforge.common.ForgeDirection;
+import cpw.mods.fml.common.network.PacketDispatcher;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -21,18 +29,14 @@ import cpw.mods.fml.relauncher.SideOnly;
  */
 public abstract class GCCoreTileEntityConductor extends GCCoreTileEntityAdvanced implements IConductor
 {
-	private IGridNetwork network;
+	protected IGridNetwork network;
 
 	public TileEntity[] adjacentConnections = null;
 
 	@Override
 	public void invalidate()
 	{
-		if (!this.worldObj.isRemote)
-		{
-			this.getNetwork().split(this);
-		}
-
+		this.getNetwork().split(this);
 		super.invalidate();
 	}
 
@@ -45,11 +49,59 @@ public abstract class GCCoreTileEntityConductor extends GCCoreTileEntityAdvanced
 	@Override
 	public IGridNetwork getNetwork()
 	{
+		return this.getNetwork(true);
+	}
+	
+	@Override
+	public IGridNetwork getNetwork(boolean createIfNull)
+	{
 		if (this.network == null)
 		{
-			UniversalNetwork network = new UniversalNetwork();
-			network.getTransmitters().add(this);
-			this.setNetwork(network);
+			HashSet<IGridNetwork> connectedNets = new HashSet<IGridNetwork>();
+			
+			for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS)
+			{
+				TileEntity tile = new Vector3(this).modifyPositionFromSide(side).getTileEntity(this.worldObj);
+				
+				if (tile instanceof ITransmitter)
+				{
+					ITransmitter transmitter = (ITransmitter) tile;
+					
+					if (transmitter.getNetworkType() == this.getNetworkType() && transmitter.getNetwork(false) != null)
+					{
+						connectedNets.add(transmitter.getNetwork());
+					}
+				}
+			}
+			
+			if(connectedNets.size() == 0)
+			{
+				UniversalNetwork network = new UniversalNetwork();
+				network.getTransmitters().add(this);
+				this.network = network;
+			}
+			else if(connectedNets.size() == 1)
+			{
+				IGridNetwork network = connectedNets.iterator().next();
+				this.network = network;
+				this.network.getTransmitters().add(this);
+				this.network.refresh();
+			}
+			else 
+			{
+				this.network = new UniversalNetwork();
+				
+				for (IGridNetwork network : connectedNets)
+				{
+					if (network != null)
+					{
+						this.network.getTransmitters().addAll(network.getTransmitters());
+					}
+				}
+				
+				this.network.getTransmitters().add(this);
+				this.network.refresh();
+			}
 		}
 
 		return this.network;
@@ -66,24 +118,27 @@ public abstract class GCCoreTileEntityConductor extends GCCoreTileEntityAdvanced
 	{
 		if (!this.worldObj.isRemote)
 		{
-			this.adjacentConnections = null;
+			PacketDispatcher.sendPacketToAllAround(this.xCoord, this.yCoord, this.zCoord, 50.0D, this.worldObj.provider.dimensionId, PacketUtil.createPacket(GalacticraftCore.CHANNEL, EnumPacketClient.REFRESH_NETWORK, new Object[] { this.xCoord, this.yCoord, this.zCoord }));
+		}
+		
+		this.adjacentConnections = null;
 
-			for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS)
+		for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS)
+		{
+			Vector3 thisVec = new Vector3(this);
+			TileEntity tileEntity = thisVec.modifyPositionFromSide(side).getTileEntity(this.worldObj);
+
+			if (tileEntity != null)
 			{
-				Vector3 thisVec = new Vector3(this);
-				TileEntity tileEntity = thisVec.modifyPositionFromSide(side).getTileEntity(this.worldObj);
-
-				if (tileEntity != null)
+				if (tileEntity.getClass() == this.getClass() && tileEntity instanceof INetworkProvider)
 				{
-					if (tileEntity.getClass() == this.getClass() && tileEntity instanceof INetworkProvider)
-					{
-						this.setNetwork((IGridNetwork) this.getNetwork().merge(((INetworkProvider) tileEntity).getNetwork()));
-					}
+					IGridNetwork newNetwork = (IGridNetwork) this.getNetwork().merge(((INetworkProvider) tileEntity).getNetwork());
+					this.setNetwork(newNetwork);
 				}
 			}
-
-			this.getNetwork().refresh();
 		}
+
+		this.getNetwork().refresh();
 	}
 
 	@Override
